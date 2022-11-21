@@ -7,20 +7,20 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "expo": "~46.0.16",
+    "expo": "~46.0.17",
     "expo-status-bar": "~1.4.0",
     "react": "18.0.0",
     "react-native": "0.69.6",
     "expo-location": "~14.3.0",
     "expo-constants": "~13.2.4",
+    "@mapbox/polyline": "*",
     "react-native-maps": "0.31.1",
     "@expo/vector-icons": "^13.0.0",
     "react-native-paper": "4.9.2",
     "react-native-location": "*",
     "react-native-maps-directions": "*",
     "@react-native-community/geolocation": "*",
-    "react-native-google-places-autocomplete": "*",
-    "@mapbox/polyline": "*"
+    "react-native-google-places-autocomplete": "*"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"

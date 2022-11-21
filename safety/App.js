@@ -54,10 +54,12 @@ export default function App() {
 
 
   const [location, setLocation] = useState(null);
+  const [destLocation, setDestLocation] = useState([0, 0]);
   const [errorMsg, setErrorMsg] = useState(null);
   const [coords1, setCoords1] = useState([]);
   const [coords2, setCoords2] = useState([]);
   const [coords3, setCoords3] = useState([]);
+  const [stringDest, setStringDest] = useState("");
 
   const [topRightLat, setTopRightLat] = useState(0); // has to be max
   const [topRightLong, setTopRightLong] = useState(-190); // has to be max
@@ -94,16 +96,22 @@ export default function App() {
     long = location.coords.longitude;
   }
   
-
-  
-  const getDirections = async (startLoc, destinationLoc, idx) => {
+  const colors = ["red", "blue", "green"];
+  const randomVar = Math.floor(Math.random() * colors.length);
+  const getDirections = async (startLoc, destinationLoc, idx, destPlaceID) => {
   try {
     const KEY = ""; //put your API key here.
     //otherwise, you'll have an 'unauthorized' error.
+    console.log("inside function");
+    console.log(destinationLoc);
     let resp = await fetch(
-      `https://maps.googleapis.com/maps/api/directions/json?origin=${startLoc}&destination=${destinationLoc}&alternatives=true&key=${KEY}`
+      // `https://maps.googleapis.com/maps/api/directions/json?origin=${startLoc}&destination=${destinationLoc}&alternatives=true&key=${KEY}`
+      // `https://maps.googleapis.com/maps/api/directions/json?origin=${startLoc}&destination="${stringDest}"&alternatives=true&key=${KEY}`
+      `https://maps.googleapis.com/maps/api/directions/json?origin=${startLoc}&destination="${destinationLoc}"&alternatives=true&mode=walking&key=${KEY}`
     );
     let respJson = await resp.json();
+    console.log(respJson);
+
 
     let northEastLat = respJson.routes[idx].bounds.northeast.lat;
     let northEastLong = respJson.routes[idx].bounds.northeast.lng;
@@ -132,26 +140,60 @@ export default function App() {
         longitude: point[1]
       };
     });
+
+    resp = await fetch(
+      // `https://maps.googleapis.com/maps/api/directions/json?origin=${startLoc}&destination=${destinationLoc}&alternatives=true&key=${KEY}`
+      // `https://maps.googleapis.com/maps/api/directions/json?origin=${startLoc}&destination="${stringDest}"&alternatives=true&key=${KEY}`
+      `https://maps.googleapis.com/maps/api/place/details/json?place_id=${destPlaceID}&fields=geometry&key=${KEY}`
+    );
+    respJson = await resp.json();
+    console.log(respJson);
+    console.log([respJson.result.geometry.location.lat, respJson.result.geometry.location.lng]);
+    setDestLocation([respJson.result.geometry.location.lat, respJson.result.geometry.location.lng]);
+    console.log(destLocation);
+
     return coords;
   } catch (error) {
     return error;
     }
   };
 
-  useEffect(() => {
-    //fetch the coordinates and then store its value into the coords Hook.
-    getDirections(barkerHall.latitude.toString() + "," + barkerHall.longitude.toString(), foothill.latitude.toString() + "," + foothill.longitude.toString(), 0)
-      .then(coords => setCoords1(coords))
-      .catch(err => console.log("Something went wrong"));
+  const setRoutes = async (stringLoc, destPlaceID) => { 
+    console.log("inside set Routes");
+    console.log("5");
+    console.log("hello" + stringLoc);
 
-    getDirections(barkerHall.latitude.toString() + "," + barkerHall.longitude.toString(), foothill.latitude.toString() + "," + foothill.longitude.toString(), 2)
-      .then(coords => setCoords3(coords))
-      .catch(err => console.log("Something went wrong"));
+    
+    // console.log([respJson.result.geometry.location.lat, respJson.result.geometry.location.lng]);
+    // setDestLocation([respJson.result.geometry.location.lat, respJson.result.geometry.location.lng]);
+    // useEffect(() => {
+      //fetch the coordinates and then store its value into the coords Hook.
+      getDirections(lat.toString() + "," + long.toString(), stringLoc, 0, destPlaceID)
+        .then(coords => setCoords1(coords))
+        .catch(err => console.log("Something went wrong"));
 
-    getDirections(barkerHall.latitude.toString() + "," + barkerHall.longitude.toString(), foothill.latitude.toString() + "," + foothill.longitude.toString(), 1)
-      .then(coords => setCoords2(coords))
-      .catch(err => console.log("Something went wrong"));
-  }, []);
+      getDirections(lat.toString() + "," + long.toString(), stringLoc, 2, destPlaceID)
+        .then(coords => setCoords3(coords))
+        .catch(err => console.log("Something went wrong"));
+
+      getDirections(lat.toString() + "," + long.toString(), stringLoc, 1, destPlaceID)
+        .then(coords => setCoords2(coords))
+        .catch(err => console.log("Something went wrong"));
+
+
+      //   getDirections(lat.toString() + "," + long.toString(), foothill.latitude.toString() + "," + foothill.longitude.toString(), 0)
+      //   .then(coords => setCoords1(coords))
+      //   .catch(err => console.log("Something went wrong"));
+
+      // getDirections(barkerHall.latitude.toString() + "," + barkerHall.longitude.toString(), foothill.latitude.toString() + "," + foothill.longitude.toString(), 2)
+      //   .then(coords => setCoords3(coords))
+      //   .catch(err => console.log("Something went wrong"));
+
+      // getDirections(barkerHall.latitude.toString() + "," + barkerHall.longitude.toString(), foothill.latitude.toString() + "," + foothill.longitude.toString(), 1)
+      //   .then(coords => setCoords2(coords))
+      //   .catch(err => console.log("Something went wrong"));
+    // }, []);
+  }
   return (
     <View style={styles.container}>
       <MapView style={styles.map} initialRegion={satherGate}>
@@ -160,32 +202,37 @@ export default function App() {
         {hideOrNot && coords2.length > 0 && <Polyline coordinates={coords2} strokeWidth={5} strokeColor="red" />}
         {hideOrNot && coords3.length > 0 && <Polyline coordinates={coords3} strokeWidth={5} strokeColor="green" />}
         
-        {hideOrNot && <Marker coordinate={{latitude: 37.874155, longitude:-122.266298}}>
+        {hideOrNot && <Marker coordinate={{latitude: 37.85155, longitude:-122.269282}}>
           <View style={styles.marker}>
-            <Text>Most People</Text>
+            <Text>Most People: {colors[randomVar]}</Text>
           </View>
         </Marker>}
 
-        {hideOrNot && <Marker coordinate={{latitude: 37.878792, longitude:-122.265282}}>
+        {hideOrNot && <Marker coordinate={{latitude: 37.853792, longitude:-122.269282}}>
           <View style={styles.marker}>
-            <Text>Least People</Text>
+            <Text>Least People: {colors[(randomVar + 1) % 3]}</Text>
           </View>
         </Marker>}
 
         <Marker coordinate={{latitude: lat, longitude: long}} pinColor="blue" />
-        <Marker coordinate={{latitude: barkerHall.latitude, longitude: barkerHall.longitude}} pinColor="blue" />
-        {hideOrNot && <Marker coordinate={{latitude: foothill.latitude, longitude: foothill.longitude}} pinColor="black" />}
+        {hideOrNot && <Marker coordinate={{latitude: destLocation[0], longitude: destLocation[1]}} pinColor="black" />}
         {hideOrNot && crimeLocs.map((data, idx) => {
           if (data.lat < topRightLat && data.lat > bottomLeftLat && data.long < topRightLong && data.long > bottomLeftLong){
           return (
           <Marker coordinate={{latitude: data.lat, longitude: data.long}} />
           );}
         })}
+
         <GooglePlacesAutocomplete
         placeholder='Where to?'
         onPress={(data, details = null) => {setTimeout(() => {
-          setHideOrNot(true);
           console.log(data, details);
+          setStringDest(data.description);
+          console.log(data.description);
+          console.log(typeof(data.description));
+          console.log(stringDest);
+          setRoutes(data.description, data.place_id).then().catch(err => console.log("Something went wrong"));
+          setHideOrNot(true);
         }, 2500);}}
         query={{
           key: '',
@@ -215,6 +262,14 @@ const styles = StyleSheet.create({
     paddingTop: Constants.statusBarHeight,
     backgroundColor: '#ecf0f1',
     padding: 8,
+  },
+  routes : {
+    flex: 1,
+    // justifyContent: 'center',
+    // paddingBottom: 10,
+    // color: "black",
+    fontSize: 30,
+    // alignItems: "center",
   },
   paragraph: {
     margin: 24,
